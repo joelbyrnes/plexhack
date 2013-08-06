@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Key:</b>
+  <%= @video.key %>
+</p>
+
+<p>
+  <b>Title:</b>
+  <%= @video.title %>
+</p>
+
+<p>
+  <b>Media type:</b>
+  <%= @video.media_type %>
+</p>
+
+<p>
+  <b>Section:</b>
+  <%= @video.section %>
+</p>
+
+<p>
+  <b>Server:</b>
+  <%= link_to @video.server.name, @video.server %>
+</p>
+
+
+<%= link_to 'Edit', edit_video_path(@video) %> |
+<%= link_to 'Back', videos_path %>

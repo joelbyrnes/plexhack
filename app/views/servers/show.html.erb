@@ -1,0 +1,29 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @server.name %>
+</p>
+
+<p>
+  <b>Host:</b>
+  <%= @server.host %>
+</p>
+
+<p>
+  <b>Address:</b>
+  <%= @server.address %>
+</p>
+
+<p>
+  <b>Port:</b>
+  <%= @server.port %>
+</p>
+
+<%= link_to 'Videos', "/servers/#{@server.id}/videos" %><br/>
+<%= link_to 'Refresh media', "/servers/#{@server.id}/refresh" %><br/>
+
+<br/>
+
+<%= link_to 'Edit', edit_server_path(@server) %> |
+<%= link_to 'Back', servers_path %>

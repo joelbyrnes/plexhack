@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Server:</b>
+  <%= @server.name %>
+</p>
+
+Refreshed <%= @videos.count %> movies<br/>
+<br/>
+<%= link_to 'Videos', "/servers/#{@server.id}/videos" %><br/>
+<br/>
+
+<%= link_to 'Edit Server', edit_server_path(@server) %> |
+<%= link_to 'Servers', servers_path %>

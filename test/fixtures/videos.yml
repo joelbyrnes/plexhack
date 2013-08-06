@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  key: MyString
+  title: MyString
+  media_type: MyString
+  section: 1
+  server: 
+
+two:
+  key: MyString
+  title: MyString
+  media_type: MyString
+  section: 1
+  server: 
