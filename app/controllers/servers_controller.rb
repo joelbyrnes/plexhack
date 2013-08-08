@@ -41,44 +41,9 @@ class ServersController < ApplicationController
   def refresh
     @server = Server.find(params[:id])
 
-    refresh_media(@server)
-  end
+    media = ServerMedia.new(@server)
 
-  def refresh_media(server)
-
-    require 'nokogiri'
-    require 'net/http'
-    require 'active_support/core_ext'
-
-    # TODO iterate over sections and separate movies and tv shows
-    section = 4
-
-    #TODO remove missing movies
-
-    xml = Net::HTTP.get(server.host, "/library/sections/#{section}/all", server.port)
-
-    doc = Nokogiri::HTML.parse(xml)
-
-    found_videos = doc.xpath("//mediacontainer/video")
-
-    @videos = []
-
-    found_videos.each do |i|
-      puts i[:key], i[:title]
-      video = Video.find_by_key(i[:key])
-
-      if video
-        video.update_attributes(:key => i[:key], :title => i[:title], :media_type => i[:type], :section => section)
-      else
-        video = Video.new(:key => i[:key], :title => i[:title], :media_type => i[:type], :section => section)
-        video.server = server
-      end
-
-      video.save
-
-      @videos << video
-    end
-
+    @videos = media.refresh_media
   end
 
   # POST /servers
