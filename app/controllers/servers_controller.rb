@@ -15,6 +15,8 @@ class ServersController < ApplicationController
   def show
     @server = Server.find(params[:id])
 
+    @media = ServerMedia.new(@server)
+
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @server }
@@ -41,9 +43,9 @@ class ServersController < ApplicationController
   def refresh
     @server = Server.find(params[:id])
 
-    media = ServerMedia.new(@server)
+    @media = ServerMedia.new(@server)
 
-    @videos = media.refresh_media
+    @videos = @media.refresh_media
   end
 
   # POST /servers

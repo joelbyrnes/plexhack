@@ -24,6 +24,28 @@
 <%= link_to 'Refresh media', "/servers/#{@server.id}/refresh" %><br/>
 
 <br/>
+<h3>Sections</h3>
+
+<table>
+  <tr>
+    <th>Key</th>
+    <th>Type</th>
+    <th>Title</th>
+    <th></th>
+  </tr>
+
+  <% @media.sections.each do |section| %>
+      <tr>
+        <td><%= section[:key] %></td>
+        <td><%= section[:type] %></td>
+        <td><%= section[:title] %></td>
+        <td><%= link_to 'Show', "/servers/#{@server.id}/section/#{section[:key]}" %></td>
+        <td><%= link_to 'Refresh', "/servers/#{@server.id}/section/#{section[:key]}/refresh" %></td>
+      </tr>
+  <% end %>
+</table>
+
+<br/>
 
 <%= link_to 'Edit', edit_server_path(@server) %> |
 <%= link_to 'Back', servers_path %>
