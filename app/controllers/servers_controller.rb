@@ -103,4 +103,22 @@ class ServersController < ApplicationController
       format.json { render json: @videos }
     end
   end
+
+  # GET /videos
+  # GET /videos.json
+  def section
+    @server = Server.find(params[:id])
+
+    @media = ServerMedia.new(@server)
+
+    @section = @media.section(params[:section_id])
+
+    # bad!
+    @videos = Video.search(:conditions => ['server_id = ? AND section = ?', params[:id], params[:section_id]])
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @videos }
+    end
+  end
 end

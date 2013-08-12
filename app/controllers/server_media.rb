@@ -8,24 +8,25 @@ class ServerMedia
     @server = server
   end
 
-  def sections
+  def sections_doc
     xml = Net::HTTP.get(@server.host, "/library/sections", @server.port)
-    doc = Nokogiri::HTML.parse(xml)
-    doc.xpath("//directory[@type='movie']")
-    #doc.xpath("//directory[@type='movie']").map do |s|
-    #
-    #  section = {}
-    #  section = {:key => s[:key]}
-    #  #section.key = ''
-    #  #section.type = ''
-    #  #section.title = ''
-    #
-    #  section
-    #end
+    Nokogiri::HTML.parse(xml)
+  end
+
+  def sections(type = nil)
+    if type
+      sections_doc.xpath("//directory[@type='#{type}']")
+    else
+      sections_doc.xpath("//directory")
+    end
+  end
+
+  def section(key)
+    sections_doc.xpath("//directory[@key='#{key}']")
   end
 
   def refresh_media()
-    found_movie_sections = sections
+    found_movie_sections = sections("movie")
 
     # TODO do tv shows
 
