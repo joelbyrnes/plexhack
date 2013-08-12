@@ -1,0 +1,11 @@
+<h1><%= "#{@server.name} - #{@section[:title]}" %></h1>
+
+<p id="notice"><%= notice %></p>
+
+Processed <%= @videos.count %> movies<br/>
+<br/>
+<%= link_to 'Show Section', "/servers/#{@server.id}/section/#{@section[:key]}" %><br/>
+<br/>
+
+<%= link_to 'Edit Server', edit_server_path(@server) %> |
+<%= link_to 'Servers', servers_path %>

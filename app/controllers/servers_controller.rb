@@ -121,4 +121,14 @@ class ServersController < ApplicationController
       format.json { render json: @videos }
     end
   end
+
+  # GET /videos
+  # GET /videos.json
+  def section_refresh
+    @server = Server.find(params[:id])
+    @media = ServerMedia.new(@server)
+    @section = @media.section(params[:section_id])
+
+    @videos = @media.refresh_media(params[:section_id])
+  end
 end

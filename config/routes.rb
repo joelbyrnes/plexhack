@@ -6,6 +6,7 @@ Plexhack::Application.routes.draw do
   match 'servers/:id/refresh' => 'servers#refresh'
   match 'servers/:id/videos' => 'servers#videos'
   match 'servers/:id/section/:section_id' => 'servers#section'
+  match 'servers/:id/section/:section_id/refresh' => 'servers#section_refresh'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

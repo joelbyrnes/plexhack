@@ -6,18 +6,8 @@
 </p>
 
 <p>
-  <b>Host:</b>
-  <%= @server.host %>
-</p>
-
-<p>
   <b>Address:</b>
-  <%= @server.address %>
-</p>
-
-<p>
-  <b>Port:</b>
-  <%= @server.port %>
+  <%= @server.host %>:<%= @server.port %>
 </p>
 
 <%= link_to 'Videos', "/servers/#{@server.id}/videos" %><br/>

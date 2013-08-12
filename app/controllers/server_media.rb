@@ -22,15 +22,19 @@ class ServerMedia
   end
 
   def section(key)
-    sections_doc.xpath("//directory[@key='#{key}']")
+    sections_doc.xpath("//directory[@key='#{key}']")[0]
   end
 
-  def refresh_media()
-    found_movie_sections = sections("movie")
+  def refresh_media(section_id = nil)
+    puts "refreshing media for section: #{section_id}"
+
+    sections = section_id ? [section(section_id)] : sections("movie")
+
+    puts "found sections: (#{sections.size}) #{sections}"
 
     # TODO do tv shows
 
-    videos = found_movie_sections.map do |s|
+    videos = sections.map do |s|
 #      print s[:key], s[:type]
       refreshed = self.refresh_videos(s[:key])
       # the splat * adds the elements of the array, instead of the array, to videos.
