@@ -1,4 +1,8 @@
 Plexhack::Application.routes.draw do
+  resources :video_notes
+
+  resources :users
+
   resources :videos
 
   resources :servers

@@ -1,0 +1,25 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Video:</b>
+  <%= @video_note.video %>
+</p>
+
+<p>
+  <b>User:</b>
+  <%= @video_note.user %>
+</p>
+
+<p>
+  <b>Rating:</b>
+  <%= @video_note.rating %>
+</p>
+
+<p>
+  <b>Comment:</b>
+  <%= @video_note.comment %>
+</p>
+
+
+<%= link_to 'Edit', edit_video_note_path(@video_note) %> |
+<%= link_to 'Back', video_notes_path %>

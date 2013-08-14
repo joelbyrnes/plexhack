@@ -1,0 +1,2 @@
+module VideoNotesHelper
+end

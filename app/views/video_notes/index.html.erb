@@ -1,0 +1,29 @@
+<h1>Listing video_notes</h1>
+
+<table>
+  <tr>
+    <th>Video</th>
+    <th>User</th>
+    <th>Rating</th>
+    <th>Comment</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @video_notes.each do |video_note| %>
+  <tr>
+    <td><%= video_note.video %></td>
+    <td><%= video_note.user %></td>
+    <td><%= video_note.rating %></td>
+    <td><%= video_note.comment %></td>
+    <td><%= link_to 'Show', video_note %></td>
+    <td><%= link_to 'Edit', edit_video_note_path(video_note) %></td>
+    <td><%= link_to 'Destroy', video_note, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Video note', new_video_note_path %>

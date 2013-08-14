@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130806114723) do
+ActiveRecord::Schema.define(:version => 20130814230409) do
 
   create_table "servers", :force => true do |t|
     t.string   "name"
@@ -21,6 +21,24 @@ ActiveRecord::Schema.define(:version => 20130806114723) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  create_table "users", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "video_notes", :force => true do |t|
+    t.integer  "video_id"
+    t.integer  "user_id"
+    t.integer  "rating"
+    t.text     "comment"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "video_notes", ["user_id"], :name => "index_video_notes_on_user_id"
+  add_index "video_notes", ["video_id"], :name => "index_video_notes_on_video_id"
 
   create_table "videos", :force => true do |t|
     t.string   "key"
