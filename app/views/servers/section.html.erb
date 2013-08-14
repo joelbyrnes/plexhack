@@ -1,4 +1,22 @@
 <h1><%= "#{@server.name} - #{@section[:title]}" %></h1>
 
-<%= render 'videos' %>
+<table>
+  <tr>
+    <th>Title</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+  Videos:  <%= @videos.size %>
+
+  <% @videos.each do |video| %>
+      <tr>
+        <td><%= video.title %></td>
+        <td><%= link_to 'Show', video %></td>
+        <td><%= link_to 'Edit', edit_video_path(video) %></td>
+        <td><%= link_to 'Destroy', video, confirm: 'Are you sure?', method: :delete %></td>
+      </tr>
+  <% end %>
+</table>
 
