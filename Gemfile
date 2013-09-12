@@ -38,3 +38,10 @@ gem 'jquery-rails'
 # gem 'ruby-debug19', :require => 'ruby-debug'
 
 gem 'nokogiri'
+
+gem 'plex-ruby'
+
+gem "transmission_api"
+
+
+
