@@ -2,8 +2,8 @@ require 'plex-ruby'
 require 'transmission_api'
 
 #downloadDir = "/Users/joel/temp/tv"
-downloadDir = "/Volumes/completed"
-extractDir = "/Volumes/3TB/Downloaded"
+downloadDir = "\\\\mac-mini\\completed"
+extractDir = "\\\\mac-mini\\3tb\\Downloaded"
 
 # see https://trac.transmissionbt.com/browser/branches/1.7x/doc/rpc-spec.txt - 3.3.  Torrent Accessors
 TORRENT_FIELDS = [
@@ -73,28 +73,53 @@ def examine(t)
   puts "not complete (#{t['percentDone'] * 100}%)" if t['percentDone'] < 1.0
 
   # movie(s)/tv show(s)/unknown - tv title has sXXeYY, movies are usually 2gb+
-  match = t['name'].match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
-  if match
-    puts "looks like TV show: " + match[1].sub(/\./, ' ')
-    puts "season " + Integer(match[2]).to_s
-    puts "episode " + Integer(match[3]).to_s
+  tvmatch = t['name'].match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
+  seasonmatch = t['name'].match /(.*)\.[sS]([0-9]{1,2})/
+  if tvmatch
+    puts "looks like TV show: " + tvmatch[1].gsub(/\./, ' ')
+    puts "season " + Integer(tvmatch[2]).to_s
+    puts "episode " + Integer(tvmatch[3]).to_s
+  elsif seasonmatch
+     puts "looks like TV show season pack: " + seasonmatch[1].gsub(/\./, ' ')
+     puts "season " + Integer(seasonmatch[2]).to_s
   else
     puts "looks like movie: #{t['name']}"
   end
 
 
-  if (files.any? do |f| f.include? '.rar' end)
-    puts "contains rars"
+  #if (files.any? do |f| f.include? '.rar' end) puts "contains rars"
+
+  rar_files = files.find_all do |f| f =~ /\.rar$/ end
+  if rar_files.count
+    puts "contains #{rar_files.count} rars"
+    subs_files = rar_files.find_all do |f| f =~ /sub.*\.rar$|Sub.*\.rar$/ end
+    if subs_files.count
+      puts "subs rars: #{subs_files}"
+    end
+    real_rars = rar_files - subs_files
+    puts "contains #{real_rars.count} real rars"
+    puts real_rars
   else puts "does not contain rars"
   end
 
   video_files = files.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
   if video_files.count do
-    puts "contains #{video_files.count} video files"
-    puts video_files
+    sample_videos = video_files.find_all do |f| f =~ /sample/ end
+    if sample_videos.count
+      puts "sample vids: #{sample_videos}"
+    end
+    puts "without samples: #{video_files - sample_videos}"
+    real_vid_files = video_files - sample_videos
+    puts "contains #{real_vid_files.count} video files: "
+    puts real_vid_files
+
+    #puts "files in downloaded?"
   end
+
   else puts "does not contain video file" end
 
+
+  # copy: everything except video .rar and .rNN and .sfv - maybe not samples either
 
   # has subs
   # is not rarred (or only subs rars), or has a single rar set, or multiple rar sets (tv season?)
@@ -105,7 +130,21 @@ def examine(t)
 end
 
 
-torrents[29..30].each do |t|
-  examine(t)
-end
+#torrents[29..30].each do |t|
+#  examine(t)
+#end
+
+# mkv download
+examine(torrents[30])
+# rars ep
+examine(torrents[35])
+
+#examine(search(torrents, "Tootsie")[0])
+examine(search(torrents, "Modern.Family.S04")[0])
+examine(search(torrents, "Pain.and.Gain")[0])
+
+#search_files(torrents, "subs").each do |t|
+#  examine(t)
+#end
+
 
