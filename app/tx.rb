@@ -1,51 +1,81 @@
 require 'plex-ruby'
 require 'transmission_api'
 
+class Torrents
+  attr_accessor :tx
+  attr_accessor :torrents
+
+  # see https://trac.transmissionbt.com/browser/branches/1.7x/doc/rpc-spec.txt - 3.3.  Torrent Accessors
+  TORRENT_FIELDS = [
+      "id",
+      "name",
+      "totalSize",
+      "addedDate",
+      "isFinished",
+      "rateDownload",
+      "rateUpload",
+      "percentDone",
+      "files",
+      'downloadDir'
+  ]
+
+  def initialize(opts)
+    # username and password optional
+    opts[:fields] = TORRENT_FIELDS
+    @tx = TransmissionApi.new(opts)
+    all
+  end
+
+  def [](y)
+    if !@torrents
+      all
+    end
+    @torrents[y]
+  end
+
+  def all
+    @torrents = @tx.all
+  end
+
+  def search(name)
+    #if !@torrents this.all
+    @torrents.find_all { |t|
+      t['name'].include? name
+    }
+  end
+
+  def search_files(name)
+    #if !@torrents this.all
+    @torrents.find_all do |t|
+      t['files'].any? { |f| f['name'].include? name }
+    end
+  end
+
+  #torrent = transmission_api.find(id)
+  #torrent = transmission_api.create("http://torrent.com/nice_pic.torrent")
+  #transmission_api.destroy(id)
+
+end
+
+class Torrent
+
+  %w(user email food).each do |meth|
+    define_method(meth) { @data[meth.to_sym] }
+  end
+
+end
+
 #downloadDir = "/Users/joel/temp/tv"
 downloadDir = "\\\\mac-mini\\completed"
 extractDir = "\\\\mac-mini\\3tb\\Downloaded"
 
-# see https://trac.transmissionbt.com/browser/branches/1.7x/doc/rpc-spec.txt - 3.3.  Torrent Accessors
-TORRENT_FIELDS = [
-    "id",
-    "name",
-    "totalSize",
-    "addedDate",
-    "isFinished",
-    "rateDownload",
-    "rateUpload",
-    "percentDone",
-    "files",
-    'downloadDir'
-]
+#url = "http://jj.empireofscience.org:9091/transmission/rpc"
+url = "http://mac-mini.local:9091/transmission/rpc"
+#url = "http://newt.local:9091/transmission/rpc",
 
-transmission_api = TransmissionApi.new(
-    #:username => "username",
-    #:password => "password",
-    #:url      => "http://jj.empireofscience.org:9091/transmission/rpc",
-    :url      => "http://mac-mini.local:9091/transmission/rpc",
-    #:url      => "http://newt.local:9091/transmission/rpc",
-    :fields   => TORRENT_FIELDS
-)
+torrents = Torrents.new(:url => url)
 
-torrents = transmission_api.all
-#torrent = transmission_api.find(id)
-#torrent = transmission_api.create("http://torrent.com/nice_pic.torrent")
-#transmission_api.destroy(id)
-
-def search(torrents, name)
-  torrents.find_all { |t|
-    t['name'].include? name
-  }
-end
-
-def search_files(torrents, name)
-  torrents.find_all do |t|
-    t['files'].any? { |f| f['name'].include? name }
-  end
-end
-
-#puts search(torrents, "Return of the King")
+#puts torrents.search("Return of the King")
 
 #puts search_files(torrents, "A.Good.Day.To.Die.Hard.2013.720p.HC.WEB-DL.x264.AC3-Riding High.mkv")
 
@@ -140,11 +170,10 @@ examine(torrents[30])
 examine(torrents[35])
 
 #examine(search(torrents, "Tootsie")[0])
-examine(search(torrents, "Modern.Family.S04")[0])
-examine(search(torrents, "Pain.and.Gain")[0])
+examine(torrents.search("Modern.Family.S04")[0])
+examine(torrents.search("Pain.and.Gain")[0])
 
-#search_files(torrents, "subs").each do |t|
+#torrents.search_files("subs").each do |t|
 #  examine(t)
 #end
-
 
