@@ -1,20 +1,37 @@
 require 'plex-ruby'
 require 'transmission_api'
 
+#downloadDir = "/Users/joel/temp/tv"
+downloadDir = "/Volumes/completed"
+extractDir = "/Volumes/3TB/Downloaded"
+
+# see https://trac.transmissionbt.com/browser/branches/1.7x/doc/rpc-spec.txt - 3.3.  Torrent Accessors
+TORRENT_FIELDS = [
+    "id",
+    "name",
+    "totalSize",
+    "addedDate",
+    "isFinished",
+    "rateDownload",
+    "rateUpload",
+    "percentDone",
+    "files",
+    'downloadDir'
+]
+
 transmission_api = TransmissionApi.new(
-        #:username => "username",
-        #:password => "password",
-        #:url      => "http://jj.empireofscience.org:9091/transmission/rpc"
-        #:url      => "http://mac-mini.local:9091/transmission/rpc"
-        :url      => "http://newt.local:9091/transmission/rpc"
+    #:username => "username",
+    #:password => "password",
+    #:url      => "http://jj.empireofscience.org:9091/transmission/rpc",
+    :url      => "http://mac-mini.local:9091/transmission/rpc",
+    #:url      => "http://newt.local:9091/transmission/rpc",
+    :fields   => TORRENT_FIELDS
 )
 
 torrents = transmission_api.all
 #torrent = transmission_api.find(id)
 #torrent = transmission_api.create("http://torrent.com/nice_pic.torrent")
 #transmission_api.destroy(id)
-
-#puts torrents[0]
 
 def search(torrents, name)
   torrents.find_all { |t|
@@ -28,18 +45,29 @@ def search_files(torrents, name)
   end
 end
 
-puts search(torrents, "Return of the King")
+#puts search(torrents, "Return of the King")
 
-puts search_files(torrents, "A.Good.Day.To.Die.Hard.2013.720p.HC.WEB-DL.x264.AC3-Riding High.mkv")
+#puts search_files(torrents, "A.Good.Day.To.Die.Hard.2013.720p.HC.WEB-DL.x264.AC3-Riding High.mkv")
 
-torrents.each do |t|
+def file_paths(torrent)
+  files = torrent['files'].collect do |f| f['name'] end
+  files.collect do |f|
+    #path = Pathname.new(torrent['downloadDir']) + f
+    path = Pathname.new("/Volumes/completed") + f
+    path.to_s
+  end
+end
+
+def examine(t)
   puts "** torrent: #{t['name']}"
+  #puts t
 
   puts "files: "
-  files = t['files'].collect do |f| f['name'] end
-  #puts
+  files = file_paths(t)
   files.each do |f|
-    #puts File.new(f)
+    #puts Pathname.new(f).exist? "exists " : "does not exist "
+    #if Pathname.new(f).exist? print "exists "
+    puts f
   end
 
   puts "not complete (#{t['percentDone'] * 100}%)" if t['percentDone'] < 1.0
@@ -55,9 +83,17 @@ torrents.each do |t|
   end
 
 
-  puts "contains rars" if files.any? do |f| f.include? '.rar' end
+  if (files.any? do |f| f.include? '.rar' end)
+    puts "contains rars"
+  else puts "does not contain rars"
+  end
 
-  puts "contains video file" if files.any? do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
+  video_files = files.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
+  if video_files.count do
+    puts "contains #{video_files.count} video files"
+    puts video_files
+  end
+  else puts "does not contain video file" end
 
 
   # has subs
@@ -65,4 +101,11 @@ torrents.each do |t|
   # is extracted to somewhere
   # get name - try to match up in plex, otherwise match on extracted filename?
 
+
 end
+
+
+torrents[29..30].each do |t|
+  examine(t)
+end
+
