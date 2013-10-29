@@ -51,14 +51,15 @@ class Torrents
     check_loaded
     @torrents.find_all { |t|
       t.name.include? name
-    }
+    }.collect do |f| Torrent.new(f) end
   end
 
   def search_files(name)
     check_loaded
-    @torrents.find_all do |t|
+    found = @torrents.find_all do |t|
       t.files.any? { |f| f['name'].include? name }
     end
+    found.collect do |f| Torrent.new(f) end
   end
 
   def find(id)
@@ -124,12 +125,30 @@ class Torrent
     end
   end
 
+  def media_files
+    MediaFiles.new(file_paths)
+  end
+
   def complete
     percentDone == 1.0
   end
 
+end
+
+class MediaFiles
+
+  attr_accessor :files
+
+  def initialize(files)
+    @files = files
+  end
+
+  def size
+    @files.size
+  end
+
   def all_rars
-    file_paths.find_all do |f| f =~ /\.rar$/ end
+    files.find_all do |f| f =~ /\.rar$/ end
   end
 
   def subs_rars
@@ -140,8 +159,12 @@ class Torrent
     all_rars - subs_rars
   end
 
+  def non_rar_files
+    @files - (@files.find_all do |f| f =~ /\.rar|.r[0-9]{2}$/ end)
+  end
+
   def video_files
-    file_paths.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
+    files.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
   end
 
   def sample_videos
@@ -154,15 +177,11 @@ class Torrent
 
 end
 
-class DownloadedFiles
-
-end
-
 
 #downloadDir = "/Users/joel/temp/tv"
 #downloadDir = "/Volumes/completed/"
 @downloadDir = "//mac-mini/completed/"
-extractDir = "//mac-mini/3tb/Downloaded/"
+@extractDir = "//mac-mini/3tb/Downloaded/"
 
 #url = "http://jj.empireofscience.org:9091/transmission/rpc"
 url = "http://mac-mini.local:9091/transmission/rpc"
@@ -181,12 +200,25 @@ def examine(t)
     puts "not complete (#{t.percentDone * 100}%)"
   end
 
-  files = t.file_paths
-  files.each do |f|
+  media = t.media_files
+  puts "#{media.size} files"
+  media.files.each do |f|
     #puts Pathname.new(f).exist? "exists " : "does not exist "
     #if Pathname.new(f).exist? print "exists "
     #puts f
   end
+
+  puts "subs rars: #{media.subs_rars}"
+
+  puts "contains #{media.content_rars.count} content rars"
+  puts media.content_rars
+
+  puts "non-rar files #{media.non_rar_files}"
+
+  puts "sample vids: #{media.sample_videos}"
+
+  puts "contains #{media.content_videos.count} content videos: "
+  puts media.content_videos
 
   if t.type == "episode"
     tvmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
@@ -201,15 +233,13 @@ def examine(t)
     puts "looks like movie: #{t.name}"
   end
 
-  #puts "contains #{t.content_rars.count} content rars"
-  #puts t.content_rars
-
-  puts "subs rars: #{t.subs_rars}"
-
-  puts "sample vids: #{t.sample_videos}"
-
-  puts "contains #{t.content_videos.count} content videos: "
-  puts t.content_videos
+  puts "-- dry run"
+  dest = Pathname.new(@extractDir) + t.name
+  puts "mkdir -p #{dest}"
+  if media.content_rars.count
+    puts "extract #{media.content_rars} to #{dest}"
+  end
+  puts "copy #{media.non_rar_files} to #{dest}"
 
   #puts "files in downloaded?"
 
