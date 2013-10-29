@@ -23,35 +23,48 @@ class Torrents
     # username and password optional
     opts[:fields] = TORRENT_FIELDS
     @tx = TransmissionApi.new(opts)
-    all
+  end
+
+  def load
+    @torrents = @tx.all.collect do |t|
+      Torrent.new(t)
+    end
+  end
+
+  def check_loaded
+    if !@torrents
+      load
+    end
   end
 
   def [](y)
-    if !@torrents
-      all
-    end
+    check_loaded
     @torrents[y]
   end
 
   def all
-    @torrents = @tx.all
+    check_loaded
+    @torrents
   end
 
   def search(name)
-    #if !@torrents this.all
+    check_loaded
     @torrents.find_all { |t|
-      t['name'].include? name
+      t.name.include? name
     }
   end
 
   def search_files(name)
-    #if !@torrents this.all
+    check_loaded
     @torrents.find_all do |t|
-      t['files'].any? { |f| f['name'].include? name }
+      t.files.any? { |f| f['name'].include? name }
     end
   end
 
-  #torrent = transmission_api.find(id)
+  def find(id)
+    Torrent.new(@tx.find(id))
+  end
+
   #torrent = transmission_api.create("http://torrent.com/nice_pic.torrent")
   #transmission_api.destroy(id)
 
@@ -59,15 +72,68 @@ end
 
 class Torrent
 
-  %w(user email food).each do |meth|
-    define_method(meth) { @data[meth.to_sym] }
+  attr_accessor :data
+
+  #%w(name percentDone downloadDir).each do |meth|
+  #  define_method(meth) { @data[meth.to_sym] }
+  #end
+
+  def initialize(data)
+    @data = data
+  end
+
+  def id
+    @data['id']
+  end
+
+  def name
+    @data['name']
+  end
+
+  def files
+    @data['files']
+  end
+
+  def percentDone
+    @data['percentDone']
+  end
+
+  def downloadDir
+    @data['downloadDir']
+  end
+
+  def file_paths(pathPrefix = "")
+    fs = files.collect do |f| f['name'] end
+    fs.collect do |f|
+      path = Pathname.new(downloadDir) + f
+      #path = Pathname.new(pathPrefix) + f
+      path.to_s
+    end
+  end
+
+  def complete
+    percentDone == 1.0
+  end
+
+  def all_rars
+    file_paths.find_all do |f| f =~ /\.rar$/ end
+  end
+
+  def subs_rars
+    all_rars.find_all do |f| f =~ /sub.*\.rar$|Sub.*\.rar$/ end
   end
 
 end
 
+class DownloadedFiles
+
+end
+
+
 #downloadDir = "/Users/joel/temp/tv"
-downloadDir = "\\\\mac-mini\\completed"
-extractDir = "\\\\mac-mini\\3tb\\Downloaded"
+#downloadDir = "/Volumes/completed/"
+@downloadDir = "//mac-mini/completed/"
+extractDir = "//mac-mini/3tb/Downloaded/"
 
 #url = "http://jj.empireofscience.org:9091/transmission/rpc"
 url = "http://mac-mini.local:9091/transmission/rpc"
@@ -75,36 +141,28 @@ url = "http://mac-mini.local:9091/transmission/rpc"
 
 torrents = Torrents.new(:url => url)
 
-#puts torrents.search("Return of the King")
-
-#puts search_files(torrents, "A.Good.Day.To.Die.Hard.2013.720p.HC.WEB-DL.x264.AC3-Riding High.mkv")
-
-def file_paths(torrent)
-  files = torrent['files'].collect do |f| f['name'] end
-  files.collect do |f|
-    #path = Pathname.new(torrent['downloadDir']) + f
-    path = Pathname.new("/Volumes/completed") + f
-    path.to_s
-  end
-end
-
 def examine(t)
-  puts "** torrent: #{t['name']}"
-  #puts t
+  puts "** torrent: #{t.name} (#{t.id})"
+  #puts t.data
+  #puts t.files[0]
 
-  puts "files: "
-  files = file_paths(t)
+  if t.complete
+    puts "complete"
+  else
+    puts "not complete (#{t.percentDone * 100}%)"
+  end
+
+  files = t.file_paths
   files.each do |f|
     #puts Pathname.new(f).exist? "exists " : "does not exist "
     #if Pathname.new(f).exist? print "exists "
-    puts f
+    #puts f
   end
 
-  puts "not complete (#{t['percentDone'] * 100}%)" if t['percentDone'] < 1.0
 
   # movie(s)/tv show(s)/unknown - tv title has sXXeYY, movies are usually 2gb+
-  tvmatch = t['name'].match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
-  seasonmatch = t['name'].match /(.*)\.[sS]([0-9]{1,2})/
+  tvmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
+  seasonmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})/
   if tvmatch
     puts "looks like TV show: " + tvmatch[1].gsub(/\./, ' ')
     puts "season " + Integer(tvmatch[2]).to_s
@@ -113,16 +171,13 @@ def examine(t)
      puts "looks like TV show season pack: " + seasonmatch[1].gsub(/\./, ' ')
      puts "season " + Integer(seasonmatch[2]).to_s
   else
-    puts "looks like movie: #{t['name']}"
+    puts "looks like movie: #{t.name}"
   end
 
-
-  #if (files.any? do |f| f.include? '.rar' end) puts "contains rars"
-
-  rar_files = files.find_all do |f| f =~ /\.rar$/ end
+  rar_files = t.all_rars
   if rar_files.count
     puts "contains #{rar_files.count} rars"
-    subs_files = rar_files.find_all do |f| f =~ /sub.*\.rar$|Sub.*\.rar$/ end
+    subs_files = t.subs_rars
     if subs_files.count
       puts "subs rars: #{subs_files}"
     end
@@ -159,20 +214,25 @@ def examine(t)
 
 end
 
+#puts torrents.search("Return of the King")
+
+#puts search_files(torrents, "A.Good.Day.To.Die.Hard.2013.720p.HC.WEB-DL.x264.AC3-Riding High.mkv")
 
 #torrents[29..30].each do |t|
 #  examine(t)
 #end
 
-# mkv download
-examine(torrents[30])
+# mkv ep
+#examine(torrents[30])
 # rars ep
-examine(torrents[35])
+#examine(torrents[35])
+# season
+#examine(torrents.search("Modern.Family.S04")[0])
+# movie
+#examine(torrents.search("Pain.and.Gain")[0])
+examine(torrents.find(156))
 
-#examine(search(torrents, "Tootsie")[0])
-examine(torrents.search("Modern.Family.S04")[0])
-examine(torrents.search("Pain.and.Gain")[0])
-
+# find movies with subs
 #torrents.search_files("subs").each do |t|
 #  examine(t)
 #end
