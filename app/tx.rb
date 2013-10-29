@@ -73,6 +73,8 @@ end
 class Torrent
 
   attr_accessor :data
+  attr_accessor :type
+  attr_accessor :content_name
 
   #%w(name percentDone downloadDir).each do |meth|
   #  define_method(meth) { @data[meth.to_sym] }
@@ -80,6 +82,17 @@ class Torrent
 
   def initialize(data)
     @data = data
+
+    tvmatch = name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
+    seasonmatch = name.match /(.*)\.[sS]([0-9]{1,2})/
+    if tvmatch
+      @type = "episode"
+    elsif seasonmatch
+      @type = "season"
+      # todo multi-season
+    else
+      @type = "movie"
+    end
   end
 
   def id
@@ -123,6 +136,22 @@ class Torrent
     all_rars.find_all do |f| f =~ /sub.*\.rar$|Sub.*\.rar$/ end
   end
 
+  def content_rars
+    all_rars - subs_rars
+  end
+
+  def video_files
+    file_paths.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
+  end
+
+  def sample_videos
+    video_files.find_all do |f| f =~ /sample/ end
+  end
+
+  def content_videos
+    video_files - sample_videos
+  end
+
 end
 
 class DownloadedFiles
@@ -159,50 +188,30 @@ def examine(t)
     #puts f
   end
 
-
-  # movie(s)/tv show(s)/unknown - tv title has sXXeYY, movies are usually 2gb+
-  tvmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
-  seasonmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})/
-  if tvmatch
+  if t.type == "episode"
+    tvmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
     puts "looks like TV show: " + tvmatch[1].gsub(/\./, ' ')
     puts "season " + Integer(tvmatch[2]).to_s
     puts "episode " + Integer(tvmatch[3]).to_s
-  elsif seasonmatch
-     puts "looks like TV show season pack: " + seasonmatch[1].gsub(/\./, ' ')
-     puts "season " + Integer(seasonmatch[2]).to_s
-  else
+  elsif t.type == "season"
+    seasonmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})/
+    puts "looks like TV show season pack: " + seasonmatch[1].gsub(/\./, ' ')
+    puts "season " + Integer(seasonmatch[2]).to_s
+  elsif t.type == "movie"
     puts "looks like movie: #{t.name}"
   end
 
-  rar_files = t.all_rars
-  if rar_files.count
-    puts "contains #{rar_files.count} rars"
-    subs_files = t.subs_rars
-    if subs_files.count
-      puts "subs rars: #{subs_files}"
-    end
-    real_rars = rar_files - subs_files
-    puts "contains #{real_rars.count} real rars"
-    puts real_rars
-  else puts "does not contain rars"
-  end
+  #puts "contains #{t.content_rars.count} content rars"
+  #puts t.content_rars
 
-  video_files = files.find_all do |f| f =~ /\.mkv$|\.avi$|\.mpg$|\.mpeg$|\.mp4$/ end
-  if video_files.count do
-    sample_videos = video_files.find_all do |f| f =~ /sample/ end
-    if sample_videos.count
-      puts "sample vids: #{sample_videos}"
-    end
-    puts "without samples: #{video_files - sample_videos}"
-    real_vid_files = video_files - sample_videos
-    puts "contains #{real_vid_files.count} video files: "
-    puts real_vid_files
+  puts "subs rars: #{t.subs_rars}"
 
-    #puts "files in downloaded?"
-  end
+  puts "sample vids: #{t.sample_videos}"
 
-  else puts "does not contain video file" end
+  puts "contains #{t.content_videos.count} content videos: "
+  puts t.content_videos
 
+  #puts "files in downloaded?"
 
   # copy: everything except video .rar and .rNN and .sfv - maybe not samples either
 
@@ -224,8 +233,10 @@ end
 
 # mkv ep
 #examine(torrents[30])
+examine(torrents.find(34))
 # rars ep
 #examine(torrents[35])
+examine(torrents.find(39))
 # season
 #examine(torrents.search("Modern.Family.S04")[0])
 # movie
