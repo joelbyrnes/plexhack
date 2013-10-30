@@ -116,21 +116,16 @@ class Torrent
     @data['downloadDir']
   end
 
-  def file_paths(pathPrefix = "")
-    fs = files.collect do |f| f['name'] end
-    fs.collect do |f|
-      path = Pathname.new(downloadDir) + f
-      #path = Pathname.new(pathPrefix) + f
-      path.to_s
-    end
-  end
-
   def media_files
-    MediaFiles.new(file_paths)
+    MediaFiles.new(files.collect do |f| f['name'] end)
   end
 
   def complete
     percentDone == 1.0
+  end
+
+  def isFinished
+    @data['isFinished']
   end
 
 end
@@ -175,19 +170,13 @@ class MediaFiles
     video_files - sample_videos
   end
 
+  def file_paths(files, pathPrefix)
+    files.collect do |f|
+      (Pathname.new(pathPrefix) + f).to_s
+    end
+  end
+
 end
-
-
-#downloadDir = "/Users/joel/temp/tv"
-#downloadDir = "/Volumes/completed/"
-@downloadDir = "//mac-mini/completed/"
-@extractDir = "//mac-mini/3tb/Downloaded/"
-
-#url = "http://jj.empireofscience.org:9091/transmission/rpc"
-url = "http://mac-mini.local:9091/transmission/rpc"
-#url = "http://newt.local:9091/transmission/rpc",
-
-torrents = Torrents.new(:url => url)
 
 def examine(t)
   puts "** torrent: #{t.name} (#{t.id})"
@@ -252,6 +241,17 @@ def examine(t)
 
 
 end
+
+#downloadDir = "/Users/joel/temp/tv"
+#downloadDir = "/Volumes/completed/"
+@downloadDir = "//mac-mini/completed/"
+@extractDir = "//mac-mini/3tb/Downloaded/"
+
+#url = "http://jj.empireofscience.org:9091/transmission/rpc"
+url = "http://mac-mini.local:9091/transmission/rpc"
+#url = "http://newt.local:9091/transmission/rpc",
+
+torrents = Torrents.new(:url => url)
 
 #puts torrents.search("Return of the King")
 
