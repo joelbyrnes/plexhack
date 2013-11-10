@@ -7,6 +7,8 @@ Plexhack::Application.routes.draw do
 
   resources :servers
 
+  resources :torrents
+
   match 'servers/:id/refresh' => 'servers#refresh'
   match 'servers/:id/videos' => 'servers#videos'
   match 'servers/:id/section/:section_id' => 'servers#section'

@@ -1,0 +1,100 @@
+<h1>Listing torrents</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Id</th>
+    <th>Type</th>
+    <th>Content Name</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @torrents.each do |t| %>
+  <tr>
+    <td><b><%= t.name %></b><br/>
+      <br/>
+
+
+      <!--#puts t.data-->
+      <!--#puts t.files[0]-->
+
+      <%= "complete" if t.complete? %>
+      <%= "not complete (#{t.percentDone * 100}%)" if !t.complete? %>
+      <br/>
+
+      <%
+         media = t.media_files
+      %>
+
+
+      <!--
+      media = t.media_files
+      puts "#{media.size} files"
+      media.files.each do |f|
+      #puts Pathname.new(f).exist? "exists " : "does not exist "
+      #if Pathname.new(f).exist? print "exists "
+      #puts f
+      end
+
+      puts "subs rars: #{media.subs_rars}"
+
+      puts "contains #{media.content_rars.count} content rars"
+      puts media.content_rars
+
+      puts "non-rar files #{media.non_rar_files}"
+
+      puts "sample vids: #{media.sample_videos}"
+
+      puts "contains #{media.content_videos.count} content videos: "
+      puts media.content_videos
+
+      if t.type == "episode"
+          tvmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})[eE]([0-9]{1,2})/
+          puts "looks like TV show: " + tvmatch[1].gsub(/\./, ' ')
+          puts "season " + Integer(tvmatch[2]).to_s
+          puts "episode " + Integer(tvmatch[3]).to_s
+      elsif t.type == "season"
+          seasonmatch = t.name.match /(.*)\.[sS]([0-9]{1,2})/
+          puts "looks like TV show season pack: " + seasonmatch[1].gsub(/\./, ' ')
+          puts "season " + Integer(seasonmatch[2]).to_s
+      elsif t.type == "movie"
+        puts "looks like movie: #{t.name}"
+      end
+
+      <br/>
+      <br/>
+      puts "-- dry run"
+      dest = Pathname.new(@extractDir) + t.name
+      puts "mkdir -p #{dest}"
+      if media.content_rars.count
+          puts "extract #{media.content_rars} to #{dest}"
+      end
+      puts "copy #{media.non_rar_files} to #{dest}"
+
+      -->
+
+      dry run: <br/>
+
+      <%
+         dest = Pathname.new("/Volumes/3TB/Downloaded") + t.name
+      %>
+
+      <%= "mkdir -p #{dest}" %><br/>
+      <%= "extract #{media.content_rars} to #{dest}" if media.content_rars.count %><br/>
+      <%= "copy #{media.non_rar_files} to #{dest}" %><br/>
+
+
+
+    </td>
+    <td><%= t.id %></td>
+    <td><%= t.type %></td>
+    <td><%= t.content_name %></td>
+    <td><%= link_to 'Show', t %></td>
+    <td><%= link_to 'Destroy', t, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />

@@ -1,0 +1,17 @@
+<%= form_for(@torrent) do |f| %>
+  <% if @torrent.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@torrent.errors.count, "error") %> prohibited this torrent from being saved:</h2>
+
+      <ul>
+      <% @torrent.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

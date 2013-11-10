@@ -51,7 +51,7 @@ class Torrents
     check_loaded
     @torrents.find_all { |t|
       t.name.include? name
-    }.collect do |f| Torrent.new(f) end
+    }
   end
 
   def search_files(name)
@@ -130,7 +130,7 @@ class Torrent
 
 end
 
-class MediaFiles
+class MediaFilesX
 
   attr_accessor :files
 
@@ -242,14 +242,15 @@ def examine(t)
 
 end
 
-#downloadDir = "/Users/joel/temp/tv"
-#downloadDir = "/Volumes/completed/"
-@downloadDir = "//mac-mini/completed/"
-@extractDir = "//mac-mini/3tb/Downloaded/"
+@downloadDir = "/Users/joel/temp/tv"
+#@downloadDir = "/Volumes/completed/"
+#@downloadDir = "//mac-mini/completed/"
+#@extractDir = "//mac-mini/3tb/Downloaded/"
+@extractDir = "/Users/joel/temp/tv/extracted"
 
 #url = "http://jj.empireofscience.org:9091/transmission/rpc"
-url = "http://mac-mini.local:9091/transmission/rpc"
-#url = "http://newt.local:9091/transmission/rpc",
+#url = "http://mac-mini.local:9091/transmission/rpc"
+url = "http://newt.local:9091/transmission/rpc"
 
 torrents = Torrents.new(:url => url)
 
@@ -263,18 +264,21 @@ torrents = Torrents.new(:url => url)
 
 # mkv ep
 #examine(torrents[30])
-examine(torrents.find(34))
+#examine(torrents.find(34))
 # rars ep
 #examine(torrents[35])
-examine(torrents.find(39))
+#examine(torrents.find(39))
 # season
 #examine(torrents.search("Modern.Family.S04")[0])
 # movie
 #examine(torrents.search("Pain.and.Gain")[0])
-examine(torrents.find(156))
+#examine(torrents.find(156))
 
 # find movies with subs
 #torrents.search_files("subs").each do |t|
 #  examine(t)
 #end
+
+#examine(torrents.search("Breaking")[0])
+examine(torrents.find(2))
 
